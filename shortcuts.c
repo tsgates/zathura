@@ -176,6 +176,13 @@ sc_adjust_window(girara_session_t* session, girara_argument_t* argument,
     scale = (double)height / (double)cell_height;
     zathura_document_set_scale(zathura->document, scale);
   }
+  else if (argument->n == ZATHURA_ADJUST_HEIGHT) {
+    if (rotation == 0 || rotation == 180) {
+      zathura_document_set_scale(zathura->document, height / max_height);
+    } else {
+      zathura_document_set_scale(zathura->document, height / max_width);
+    }
+  }
   else {
     goto error_ret;
   }
@@ -324,6 +331,8 @@ sc_goto(girara_session_t* session, girara_argument_t* argument, girara_event_t* 
     page_set(zathura, 0);
   } else if (argument->n == BOTTOM) {
     page_set(zathura, zathura_document_get_number_of_pages(zathura->document) - 1);
+  } else if (argument->n == CURRENT) {
+    page_set(zathura, zathura_document_get_current_page_number(zathura->document));
   }
 
   zathura_jumplist_add(zathura);
