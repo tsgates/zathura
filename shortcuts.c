@@ -177,11 +177,9 @@ sc_adjust_window(girara_session_t* session, girara_argument_t* argument,
     zathura_document_set_scale(zathura->document, scale);
   }
   else if (argument->n == ZATHURA_ADJUST_HEIGHT) {
-    if (rotation == 0 || rotation == 180) {
-      zathura_document_set_scale(zathura->document, height / max_height);
-    } else {
-      zathura_document_set_scale(zathura->document, height / max_width);
-    }
+    scale = (double)(height - (pages_per_row - 1) * padding) /
+            (double)(pages_per_row * cell_height);
+    zathura_document_set_scale(zathura->document, scale);
   }
   else {
     goto error_ret;
