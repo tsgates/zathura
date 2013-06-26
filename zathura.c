@@ -580,6 +580,9 @@ document_open(zathura_t* zathura, const char* path, const char* password)
     zathura_document_set_adjust_mode(document, ZATHURA_ADJUST_NONE);
   }
 
+  /* update title */
+  window_title_update(zathura);
+
   /* update statusbar */
   girara_statusbar_item_set_text(zathura->ui.session, zathura->ui.statusbar.file, file_path);
 
@@ -688,17 +691,6 @@ document_open(zathura_t* zathura, const char* path, const char* password)
 
   /* bookmarks */
   zathura_bookmarks_load(zathura, file_path);
-
-  /* update title */
-  bool basename_only = false;
-  girara_setting_get(zathura->ui.session, "window-title-basename", &basename_only);
-  if (basename_only == false) {
-    girara_set_window_title(zathura->ui.session, file_path);
-  } else {
-    char* tmp = g_path_get_basename(file_path);
-    girara_set_window_title(zathura->ui.session, tmp);
-    g_free(tmp);
-  }
 
   g_free(file_uri);
 
@@ -940,6 +932,38 @@ error_out:
 }
 
 void
+window_title_update(zathura_t* zathura)
+{
+  if (zathura == NULL) {
+    return;
+  }
+
+  if (zathura->document == NULL) {
+    girara_set_window_title(zathura->ui.session, _("[No name]"));
+    return;
+  }
+  unsigned int number_of_pages     = zathura_document_get_number_of_pages(zathura->document);
+  unsigned int current_page_number = zathura_document_get_current_page_number(zathura->document);
+  const char*  file_path           = zathura_document_get_path(zathura->document);
+
+  bool show_current_page_number    = false;
+  bool basename_only               = false;
+  girara_setting_get(zathura->ui.session, "window-title-curpage", &show_current_page_number);
+  girara_setting_get(zathura->ui.session, "window-title-basename", &basename_only);
+
+  char* tmp = g_path_get_basename(file_path);
+
+  if (show_current_page_number == false) {
+    girara_set_window_title(zathura->ui.session, (basename_only) ? tmp : file_path);
+  }  else {
+    char* title = g_strdup_printf("[%d/%d]: %s", current_page_number + 1, number_of_pages, (basename_only) ? tmp : file_path);
+    girara_set_window_title(zathura->ui.session, title);
+    g_free(title);
+  }
+  g_free(tmp);
+}
+
+void
 statusbar_page_number_update(zathura_t* zathura)
 {
   if (zathura == NULL || zathura->ui.statusbar.page_number == NULL) {
@@ -956,6 +980,8 @@ statusbar_page_number_update(zathura_t* zathura)
   } else {
     girara_statusbar_item_set_text(zathura->ui.session, zathura->ui.statusbar.page_number, "");
   }
+  /* update pages in window title also, if window-title-curpage is set */
+  window_title_update(zathura);
 }
 
 void
