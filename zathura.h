@@ -312,6 +312,13 @@ void page_widget_set_mode(zathura_t* zathura, unsigned int pages_per_row, unsign
 void statusbar_page_number_update(zathura_t* zathura);
 
 /**
+ * Updates window title
+ *
+ * @param zathura The zathura session
+ */
+void window_title_update(zathura_t* zathura);
+
+/**
  * Return current jump in the jumplist
  *
  * @param zathura The zathura session
